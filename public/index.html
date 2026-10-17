@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniHealth | Elite Care Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+        
+        :root { 
+            --glass: rgba(255, 255, 255, 0.8);
+            --primary: #4361ee;
+            --accent: #4cc9f0;
+            --danger: #ff4d6d;
+            --bg: #f0f4f8;
+        }
+
+        body { 
+            background: var(--bg); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            color: #2b2d42;
+            overflow-x: hidden;
+        }
+
+        /* Logic: Sections */
+        .page-section { display: none !important; min-height: 100vh; width: 100%; padding: 25px; padding-bottom: 120px; animation: fadeIn 0.4s ease; }
+        .page-section.active { display: block !important; }
+        #login-sec.active { display: flex !important; align-items: center; justify-content: center; background: radial-gradient(circle at top right, #4361ee11, transparent), white; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modern Cards */
+        .card { 
+            border: none; border-radius: 24px; 
+            background: var(--glass); backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.08); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(67, 97, 238, 0.15); }
+
+        /* Custom UI Components */
+        .btn-primary { 
+            background: var(--primary); border: none; border-radius: 16px; 
+            padding: 14px; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .nav-bottom { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 400px; background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px); border-radius: 25px;
+            display: flex; padding: 12px; z-index: 2000;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+        }
+        .nav-item { flex: 1; text-align: center; color: #adb5bd; text-decoration: none; font-weight: 600; font-size: 0.7rem; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+
+        /* Avatar & Profile */
+        .prof-header { text-align: center; margin-bottom: 30px; }
+        .prof-img { 
+            width: 100px; height: 100px; border-radius: 30px; 
+            object-fit: cover; border: 4px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+        }
+
+        /* Slots Logic */
+        .time-slot { 
+            border: 2px solid #edf2f7; border-radius: 16px; padding: 15px; 
+            cursor: pointer; text-align: center; background: white; font-weight: 600; 
+        }
+        .time-slot.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        .time-slot.booked { background: #f8f9fa; color: #ced4da; border-color: #f1f3f5; cursor: not-allowed; pointer-events: none; }
+        
+        .clinic-icon { width: 50px; height: 50px; background: #eef2ff; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.5rem; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <section id="login-sec" class="page-section active">
+        <div class="card p-5 text-center" style="max-width: 420px; width: 100%;">
+            <div class="mb-4">
+                <span style="background: var(--primary); color: white; padding: 15px; border-radius: 20px; display: inline-block;">
+                    <i class="bi bi-activity h2"></i>
+                </span>
+            </div>
+            <h2 class="fw-bold">OmniHealth</h2>
+            <p class="text-muted small mb-4">Patient & Doctor Secure Access</p>
+            <div class="text-start">
+                <label class="small fw-bold text-muted mb-1 ms-1">Email</label>
+                <input type="email" id="email" class="form-control mb-3 p-3 bg-light border-0" placeholder="name@omni.com">
+                <label class="small fw-bold text-muted mb-1 ms-1">Password</label>
+                <input type="password" id="pass" class="form-control mb-4 p-3 bg-light border-0" placeholder="••••••••">
+                <button class="btn btn-primary w-100 p-3 shadow-lg" onclick="handleLogin()">Sign In</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="patient-home" class="page-section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div><p class="text-muted mb-0">Good Day,</p><h3 class="fw-bold u-name"></h3></div>
+            <div class="rounded-circle bg-white shadow-sm p-2"><i class="bi bi-bell text-primary"></i></div>
+        </div>
+        
+        <h6 class="fw-bold mb-3">Select Branch</h6>
+        <div class="row g-3">
+            <div class="col-6"><div class="card p-3" onclick="loadDocs('North')"><div class="clinic-icon"><i class="bi bi-geo-alt"></i></div><h6 class="fw-bold mb-1">North</h6><small class="text-muted">Gulshan Area</small></div></div>
+            <div class="col-6"><div class="card p-3" onclick="loadDocs('South')"><div class="clinic-icon" style="background: #e0f2fe;"><i class="bi bi-building" style="color: #0284c7;"></i></div><h6 class="fw-bold mb-1">South</h6><small class="text-muted">DHA Area</small></div></div>
+        </div>
+        
+        <h6 class="fw-bold mt-4 mb-3">Specialists Available</h6>
+        <div id="doc-grid" class="row g-3"></div>
+    </section>
+
+    <section id="booking-view" class="page-section">
+        <div class="card p-4 prof-header mb-4">
+            <button class="btn btn-sm btn-light position-absolute start-0 ms-3" onclick="showSection('patient-home')"><i class="bi bi-chevron-left"></i></button>
+            <img id="view-img" src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png" class="prof-img mx-auto mb-3">
+            <h4 id="view-name" class="fw-bold mb-0"></h4>
+            <p id="view-spec" class="text-primary fw-bold"></p>
+        </div>
+        
+        <div class="d-flex justify-content-between mb-3 align-items-end">
+            <h6 class="fw-bold mb-0">Available Time Slots</h6>
+            <span class="badge bg-primary-subtle text-primary px-3 rounded-pill">Today</span>
+        </div>
+        <div id="time-grid" class="row g-3"></div>
+        
+        <button class="btn btn-primary w-100 mt-5 p-3 shadow-lg" onclick="bookNow()">Confirm Appointment</button>
+    </section>
+
+    <section id="doctor-dash" class="page-section">
+        <h3 class="fw-bold mb-1">Daily Schedule</h3>
+        <p class="text-muted small mb-4 u-name"></p>
+        <div id="appt-list"></div>
+    </section>
+
+    <section id="profile-sec" class="page-section">
+        <div class="card p-4 prof-header mb-4">
+            <img id="my-pic" src="" class="prof-img mx-auto mb-3">
+            <h3 id="my-name" class="fw-bold mb-0"></h3>
+            <span id="my-role" class="badge bg-primary mt-2 px-3 py-2 rounded-pill"></span>
+        </div>
+
+        <div id="patient-history-container">
+            <h6 class="fw-bold mb-3 ms-2">Appointment History</h6>
+            <div id="history-data"></div>
+        </div>
+
+        <div id="doctor-bio-container" class="d-none">
+            <div class="card p-4 mb-3">
+                <h6 class="fw-bold mb-1">Professional Specialization</h6>
+                <p id="doc-spec-data" class="text-primary mb-3 fw-bold"></p>
+                <h6 class="fw-bold mb-1">Bio</h6>
+                <p class="text-muted small">Leading healthcare specialist at OmniHealth Karachi. Expert in digital health integration and patient management. University Final Project Research Lead.</p>
+            </div>
+        </div>
+    </section>
+
+    <nav id="navbar" class="nav-bottom d-none">
+        <div class="nav-item active" onclick="goHome(this)"><i class="bi bi-house-heart"></i>Home</div>
+        <div class="nav-item" onclick="showProfile(this)"><i class="bi bi-person-badge"></i>Profile</div>
+        <div class="nav-item text-danger" onclick="location.reload()"><i class="bi bi-box-arrow-right"></i>Exit</div>
+    </nav>
+
+        <section id="admin-dash" class="page-section">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0">System Administration</h3>
+            <p class="text-muted small">DBA Command Center | Karachi Hub</p>
+        </div>
+        <span class="badge bg-primary rounded-pill px-3 py-2">Materialized View: Active</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6">
+            <div class="card p-3 border-0 shadow-sm" style="background: linear-gradient(45deg, #4361ee, #4cc9f0); color: white;">
+                <small class="opacity-75">Total Revenue (PKR)</small>
+                <h3 class="fw-bold mb-0" id="admin-rev">0</h3>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card p-3 border-0 shadow-sm" style="background: linear-gradient(45deg, #2ec4b6, #cbf3f0); color: #011627;">
+                <small class="opacity-75">Total Appointments</small>
+                <h3 class="fw-bold mb-0" id="admin-apps">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-4 mb-4">
+        <h6 class="fw-bold mb-3"><i class="bi bi-diagram-3-fill me-2"></i> Fragmentation Status</h6>
+        <div id="fragment-status">
+            </div>
+    </div>
+
+    <div class="card p-4">
+        <h6 class="fw-bold mb-3"><i class="bi bi-file-earmark-arrow-down me-2"></i> External Audit Module</h6>
+        <p class="text-muted small">Export system snapshots in CSV format for regulatory auditing.</p>
+        <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary" onclick="refreshMV()">Refresh Analytics MV</button>
+            <a href="/api/admin/export-audit" class="btn btn-dark fw-bold">Download Auditor's CSV Report</a>
+        </div>
+    </div>
+</section>
+
+
+<script>
+    let user = null;
+    let selectedDocId = null;
+    let selectedTime = null;
+    let selectedClinicId = null;
+
+    function showSection(id) {
+        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function updateNav(el) {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    async function handleLogin() {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('pass').value })
+        });
+        if (res.ok) {
+            user = await res.json();
+            document.getElementById('navbar').classList.remove('d-none');
+            document.querySelectorAll('.u-name').forEach(e => e.innerText = user.U_NAME);
+            goHome();
+        }
+    }
+
+    function goHome(el) {
+    if(el) updateNav(el);
+    
+    // Clean up the role from the DB
+    const role = user.U_ROLE ? user.U_ROLE.trim().toUpperCase() : "";
+
+    if (role === 'ADMIN') {
+        showSection('admin-dash');
+        loadAdminStats(); 
+    } 
+    else if (role === 'DOCTOR') {
+        showSection('doctor-dash');
+        loadAppts();
+    } 
+    else {
+        showSection('patient-home');
+    }
+}
+
+    async function loadDocs(reg) {
+        
+
+    selectedClinicId = (reg === "South") ? 3 : 1;
+
+    const res = await fetch(`/api/doctors-by-region/${reg}`);
+    const data = await res.json();
+        document.getElementById('doc-grid').innerHTML = data.map(d => `
+            <div class="col-12"><div class="card p-3 d-flex flex-row align-items-center" onclick="viewDoc(${d.U_ID}, '${d.U_NAME}', '${d.SPECIALIZATION}')">
+                <div class="p-3 bg-primary-subtle rounded-4 me-3"><i class="bi bi-person-check text-primary h4 mb-0"></i></div>
+                <div><h6 class="fw-bold mb-0">${d.U_NAME}</h6><small class="text-muted">${d.SPECIALIZATION}</small></div>
+                <i class="bi bi-chevron-right ms-auto text-muted"></i>
+            </div></div>
+        `).join('');
+    }
+
+    async function viewDoc(id, name, spec) {
+        selectedDocId = id;
+        document.getElementById('view-name').innerText = name;
+        document.getElementById('view-spec').innerText = spec;
+        
+        // Fetch taken slots
+        const res = await fetch(`/api/booked-slots/${id}`);
+        const taken = await res.json();
+        
+        const shifts = ["09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM"];
+        document.getElementById('time-grid').innerHTML = shifts.map(s => {
+            const isTaken = taken.includes(s);
+            return `<div class="col-4">
+                <div class="time-slot ${isTaken ? 'booked' : ''}" onclick="${isTaken ? '' : `selSlot(this, '${s}')`}">
+                    ${s} ${isTaken ? '<br><small>Taken</small>' : ''}
+                </div>
+            </div>`;
+        }).join('');
+        showSection('booking-view');
+    }
+
+    function selSlot(el, s) {
+        document.querySelectorAll('.time-slot').forEach(t => t.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedTime = s;
+    }
+
+    async function bookNow() {
+
+    if (!selectedTime) {
+        alert("Select a slot!");
+        return;
+    }
+
+    if (!selectedDocId) {
+        alert("Select a doctor first!");
+        return;
+    }
+
+    if (!selectedClinicId) {
+        alert("Select clinic first!");
+        return;
+    }
+
+    const d = new Date();
+
+    const dateStr =
+        d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+
+    const fullTimeStr = `${dateStr} ${selectedTime}`;
+
+    try {
+        const res = await fetch('/api/book-appointment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                patientId: user.U_ID,
+                doctorId: selectedDocId,
+                clinicId: selectedClinicId,
+                date: dateStr,
+                time: fullTimeStr
+            })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("✅ Booking Secured!");
+            location.reload();
+        } else {
+            alert("❌ Error: " + data.error);
+        }
+
+    } catch (err) {
+        alert("❌ Network Error: " + err.message);
+    }
+}
+    
+    async function loadAppts() {
+        const res = await fetch(`/api/doctor-dashboard/${user.U_ID}`);
+        const data = await res.json();
+        document.getElementById('appt-list').innerHTML = data.map(a => `
+            <div class="card p-3 mb-3 border-start border-primary border-5">
+                <h6 class="fw-bold mb-1">${a.patient_name}</h6>
+                <div class="d-flex align-items-center text-muted small">
+                    <i class="bi bi-clock me-2"></i> ${a.time}
+                    <span class="ms-auto badge bg-success-subtle text-success">Confirmed</span>
+                </div>
+            </div>
+        `).join('') || '<div class="text-center py-5">Empty schedule today.</div>';
+    }
+
+    async function showProfile(el) {
+        if(el) updateNav(el);
+        document.getElementById('my-name').innerText = user.U_NAME;
+        document.getElementById('my-role').innerText = user.U_ROLE;
+        
+        if(user.U_ROLE === 'DOCTOR') {
+            document.getElementById('my-pic').src = "https://cdn-icons-png.flaticon.com/512/3774/3774299.png";
+            document.getElementById('doctor-bio-container').classList.remove('d-none');
+            document.getElementById('patient-history-container').classList.add('d-none');
+            document.getElementById('doc-spec-data').innerText = user.SPECIALIZATION || "Specialist Surgeon";
+        } else {
+            document.getElementById('my-pic').src = "https://cdn-icons-png.flaticon.com/512/4140/4140047.png";
+            document.getElementById('doctor-bio-container').classList.add('d-none');
+            document.getElementById('patient-history-container').classList.remove('d-none');
+            loadHistory();
+        }
+        showSection('profile-sec');
+    }
+
+    async function loadHistory() {
+        const res = await fetch(`/api/patient-history/${user.U_ID}`);
+        const data = await res.json();
+        document.getElementById('history-data').innerHTML = data.map(h => `
+            <div class="card p-3 mb-3 border-start border-danger border-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div><h6 class="fw-bold mb-0">Dr. ${h.doctor}</h6><small class="text-muted">${h.time}</small></div>
+                    <button class="btn btn-light rounded-circle text-danger" onclick="cancelIt(${h.id})"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>
+        `).join('') || '<div class="text-muted text-center py-4 small">No history yet.</div>';
+    }
+
+    async function cancelIt(id) {
+        if(confirm("Cancel Appointment?")) {
+            await fetch('/api/cancel-appointment', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ appId: id })
+            });
+            loadHistory();
+        }
+    }
+    async function loadAdminStats() {
+    const res = await fetch('/api/admin/stats');
+    const data = await res.json();
+    
+    // Populate stats from Materialized View
+    document.getElementById('admin-rev').innerText = data.revenue.toLocaleString();
+    document.getElementById('admin-apps').innerText = data.totalBookings;
+
+    // Populate Fragment Load from Infrastructure Layer (Clinics Table)
+    document.getElementById('fragment-status').innerHTML = data.clinics.map(c => `
+        <div class="mb-3">
+            <div class="d-flex justify-content-between small mb-1">
+                <span class="fw-bold">${c.name}</span>
+                <span>${c.count} / ${c.max} Patients</span>
+            </div>
+            <div class="progress" style="height: 10px; border-radius: 5px;">
+                <div class="progress-bar ${c.count >= c.max ? 'bg-danger' : 'bg-primary'}" 
+                     style="width: ${(c.count / c.max) * 100}%"></div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function refreshMV() {
+    // Calls the refresh procedure in your Omni_Admin_Pkg
+    await fetch('/api/admin/refresh-mv', { method: 'POST' });
+    alert("Materialized View Refreshed Successfully.");
+    loadAdminStats();
+}
+</script>
+</body>
+</html>

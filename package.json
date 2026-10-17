@@ -1,0 +1,16 @@
+{
+  "name": "omnihealth",
+  "version": "1.0.0",
+  "description": "Omni Health backend server",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "express": "^5.2.1",
+    "json2csv": "^6.0.0-alpha.2",
+    "oracledb": "^6.10.0"
+  }
+}
